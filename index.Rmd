@@ -1,8 +1,0 @@
----
-title: "msspu.github"
----
-
-Poznámkový blog o datové analýze, tematicky zaměřený na **trh práce, vzdělání, sociální strukturu v ČR**
-
-
-Stránky byly vytvořeny pomocí  https://rmarkdown.rstudio.com/lesson-13.html.
