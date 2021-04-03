@@ -1,0 +1,10 @@
+name: "msspu.github"
+navbar:
+  title: "msspu.github"
+  left:
+    - text: "Domů"
+      href: index.html
+    - text: "Trh práce - tvorba map"
+      href: about.html
+    - text: "Data k trhu práce"
+      href: Data1.html

@@ -1,0 +1,12 @@
+---
+title: "Data k mapám"
+author: "MS"
+output: 
+  html_document:
+    css: mystyle.css
+---
+
+```{r, results='asis'}
+writeLines("td, th { padding : 6px } th { background-color : brown ; color : white; border : 1px solid white; } td { color : brown ; border : 1px solid brown }", con = "mystyle.css")
+knitr::kable(data18, format = "html")
+```
