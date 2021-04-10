@@ -273,7 +273,7 @@ $(document).ready(function () {
 
 <div id="jak-na-data-z-spss" class="section level2">
 <h2>Jak na data z SPSS</h2>
-<p>v R lze načíst data z SPSS, s nimi se načtou i <strong>variable a value labels.</strong> Oproti statistickému software jako je SPSS, STATA apod. má R výrazně flexibilnější datové typy a velkou míru decentralizace v externích <strong>packages</strong>. Je proto potřeba počítat s tím, že při řadě operací nad těmito SPSS daty se labely automaticky nezobrazí.</p>
+<p>v R lze pomocí balíčku expss načíst data z SPSS, s nimi se načtou i <strong>variable a value labels.</strong> Oproti statistickému software jako je SPSS, STATA apod. má R výrazně flexibilnější datové typy a velkou míru decentralizace v externích <strong>packages</strong>. Je proto potřeba počítat s tím, že při řadě operací nad těmito SPSS daty se labely automaticky nezobrazí.</p>
 <pre class="r"><code>library(haven)
 library(expss)
 library(sjmisc)
@@ -282,7 +282,7 @@ cvvm = read_sav(file = &quot;h:/moje/Phd/projekty/Prekariat/článek/Spojena_dat
 </div>
 <div id="vyjetí-frekvencí" class="section level2">
 <h2>Vyjetí frekvencí</h2>
-<p>frekvence příkazem frq, nejinformativnější hodnota včetně <strong>missing include</strong> pro publikaci bez dalšího formátování nepříliš vhodné, pro vlastní práci zatím asi nejlepší, který jsme našel</p>
+<p>frekvence příkazem frq z balíčku sjmisc, zobrazuje <strong>labels i missing include</strong> pro publikaci bez dalšího formátování nepříliš vhodné, pro vlastní práci zatím asi nejlepší příkaz pro rychlou deskripci, který jsme našel.</p>
 <pre class="r"><code>frq(cvvm$t_VZD)</code></pre>
 <pre><code>## 
 ## t_VZD - Transformované vzdělání (4 kat.) (x) &lt;numeric&gt;
@@ -440,7 +440,7 @@ t_VZD - Transformované vzdělání (4 kat.)
 </tr>
 </tbody>
 </table>
-<p>Na tom lze demonstrovat několik vlastností<br/> - jak změnit <strong>variable/value labels</strong><br/> - provedení příkazu fre, tak jako skoro všechno v Rku lze přiřadit novému objektu, v tomto případě dataframe vzd<br/> - nově vytvořený dataframe z hodnot frekvenční tabulky lze pak převést do jiného způsobu v tomto případě do dobře editovatelného kable - <a href="https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html" class="uri">https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html</a><br/> - operátory %&gt;%, tzv <strong>pipes</strong>, ukazují další důležitou vlastnost R, říkají v podstatě a pak proveď další krok v tomto případě 1) otevři dataframe vzd 2) vytvoř tabulku <strong>kbl</strong> s názvem a bez desetinných míst 3) přidej jí tradiční styl kabble_classic a font Cambria</p>
+<p>Na tom lze demonstrovat několik vlastností<br/> - jak změnit <strong>variable/value labels</strong><br/> - provedení příkazu fre, tak jako skoro všechno v Rku lze přiřadit novému objektu, v tomto případě dataframe vzd<br/> - nově vytvořený dataframe z hodnot frekvenční tabulky lze pak převést do jiného objektu v tomto případě do dobře editovatelného kable - <a href="https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html" class="uri">https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html</a><br/> - operátory %&gt;%, tzv <strong>pipes</strong>, ukazují další důležitou vlastnost R, říkají v podstatě a pak proveď další krok v tomto případě 1) otevři dataframe vzd 2) pak vytvoř tabulku <strong>kbl</strong> s názvem a bez desetinných míst 3) pak jí přidej tradiční styl kabble_classic a font Cambria</p>
 <pre class="r"><code>cvvm = apply_labels(cvvm,
                  t_VZD = &quot;Vzdělání&quot;
 ) #Variable labels
