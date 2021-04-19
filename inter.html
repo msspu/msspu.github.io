@@ -11,7 +11,7 @@
 
 
 
-<title>grafy.utf8</title>
+<title>inter.utf8</title>
 
 <script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
@@ -30,9 +30,16 @@
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="site_libs/dygraphs-1.1.1/dygraph.css" rel="stylesheet" />
+<script src="site_libs/dygraphs-1.1.1/dygraph-combined.js"></script>
+<script src="site_libs/dygraphs-1.1.1/shapes.js"></script>
+<script src="site_libs/moment-2.8.4/moment.js"></script>
+<script src="site_libs/moment-timezone-0.2.5/moment-timezone-with-data.js"></script>
+<script src="site_libs/moment-fquarter-1.0.0/moment-fquarter.min.js"></script>
+<script src="site_libs/dygraphs-binding-1.1.1.6/dygraphs.js"></script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -216,9 +223,6 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
-<style type="text/css">
-.code-folding-btn { margin-bottom: 4px; }
-</style>
 
 
 
@@ -273,74 +277,51 @@ $(document).ready(function () {
 
 <div id="header">
 
-<div class="btn-group pull-right float-right">
-<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
-<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
-<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
-<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
-</ul>
-</div>
-
 
 
 
 </div>
 
 
-<div id="vývoj-zaměstnanecké-struktury-1995-až-2018" class="section level2">
-<h2>Vývoj zaměstnanecké struktury 1995 až 2018</h2>
-<p>načtení agregovaných dat, obsahují podíly celkové pracovní síly v ČR za typy ekonomické aktivity:</p>
-<p>- Zaměstnanci na plný úvazek v kombinaci se smlouvou na dobu neurčitou (tz. standardní úvazky)</p>
-<p>- Podnikatelé se zaměstnanci</p>
-<p>- OSVČ</p>
-<p>- Kombinace nestandardních úvazků</p>
-<ul>
-<li><p>částečný úvazek na dobu neurčitou</p></li>
-<li><p>částečný úvazek na dobu určitou</p></li>
-<li><p>plný úvazek na dobu určitou</p></li>
-</ul>
+<div id="interaktivní-graf" class="section level2">
+<h2>Interaktivní graf</h2>
+<p>v R je integrována celá řada nástrojů z JS: viz <a href="https://www.htmlwidgets.org/" class="uri">https://www.htmlwidgets.org/</a></p>
+<p>Zde používám Dygraph, s posuvníkem roků na časové řadě, používám stejná data jako ve vývoji zaměstnanecké struktury 1995 až 2018. A ukazuji jak od roku 1995 narůstal podíl OSVČ bez zaměstnanců, ale podíl podnikatelů se zaměstnanci stagnoval, nebo mírně klesal.</p>
 <pre class="r"><code>library(readxl)
 library(tidyr)
 library(dplyr)
+library(dygraphs)
+library(xts)
 dataPost &lt;- read_excel(&quot;h:/moje/DATA/Post95to18.xlsx&quot;)
 dataPost$year &lt;- as.Date(paste(dataPost$REFTROK, 1, 1, sep = &quot;-&quot;))</code></pre>
-<p>Transformace dat</p>
-<pre class="r"><code>df &lt;- dataPost %&gt;%
-  select(year, CastNeurcita, PlnyUrcita, CastUrcita, Nezam, OSVC ) %&gt;%
-  gather(key = &quot;typ&quot;, value = &quot;value&quot;, -year)
+<p>V R Markdown je také možné vkládat jinou než R syntaxi - praktické je zřejmě především JS, CSS, Python.</p>
+<p>Pro větší akce může být teoreticky zajímavé i C, C++, Fortran, Julia…</p>
+<p>Pravidla použití syntaxe jsou zde: <a href="https://bookdown.org/yihui/rmarkdown/language-engines.html#rcpp" class="uri">https://bookdown.org/yihui/rmarkdown/language-engines.html#rcpp</a></p>
+<p>a zde jednoduchá změna barvy pozadí v CSS:</p>
+<pre class="css"><code>body {
+   background-color: #F1F1F1;
+}
+</code></pre>
+<style type="text/css">
+body {
+   background-color: #F1F1F1;
+}
 
-dataPost$Self &lt;- (dataPost$Podnikatel + dataPost$OSVC)
-dataPost$Nons &lt;- (dataPost$CastNeurcita + dataPost$PlnyUrcita + dataPost$CastUrcita )
+</style>
+<p>Před použitím dygraph je potřeba data převést na datový typ xts (time series)</p>
+<p>Formátování grafu je poměrně strohé, např. současné nastavení umožňuje na ose x nastavení roční - ANNUAL nebo desetiletí DECADAL. Zde by se hodila spíš pětiletka, ale to by bylo potřeba nastavit pomocí JS zde: <a href="https://github.com/danvk/dygraphs/blob/master/src/dygraph-tickers.js#L221" class="uri">https://github.com/danvk/dygraphs/blob/master/src/dygraph-tickers.js#L221</a> proměnná TICK_PLACEMENT</p>
+<pre class="r"><code>dg1 &lt;- dplyr::select(dataPost, Podnikatel, OSVC)
 
-df2 &lt;- dataPost %&gt;%
-  select(year, Self, Nons, Zam) %&gt;%
-  gather(key = &quot;typ&quot;, value = &quot;value&quot;, -year)
-
-
-df$typ &lt;- recode(df$typ, CastNeurcita = &quot;Částečný úvazek na dobu neurčitou&quot;, PlnyUrcita = &quot;Plný úvazek na dobu určitou&quot;, CastUrcita = &quot;Částečný úvazek na dobu určitou&quot;, Nezam = &quot;Nezaměstnanost&quot;, OSVC = &quot;OSVČ&quot;  )
-
-df2$typ &lt;- recode(df2$typ, Self = &quot;Podnikatelé/OSVČ&quot;, Nons = &quot;Nestandardní úvazky&quot;, Zam = &quot;Zaměstnanci na plný úvazek a dobu neurčitou&quot;)</code></pre>
-<pre class="r"><code>library(ggplot2)
-ggplot(df2, aes(x = year, y = value)) + 
-  geom_line(aes(color = typ), size = 2) +
-    theme_minimal()+
- labs(
-    x = &quot;&quot;,
-    y = &quot;% z pracovní síly&quot;,
-    title = &quot;Ekonomická aktivita 1995 - 2018&quot;,
-    subtitle = &quot;&quot;
-  )</code></pre>
-<p><img src="grafy_files/figure-html/unnamed-chunk-4-1.png" width="1152" /></p>
-<pre class="r"><code>ggplot(df, aes(x = year, y = value)) + 
-  geom_line(aes(color = typ), size = 2) +
-    theme_minimal()+
- labs(
-    x = &quot;&quot;,
-    y = &quot;% z pracovní síly&quot;,
-    title = &quot;Ekonomická aktivita 1995 - 2018&quot;,
-    subtitle = &quot;Nestandardní úvazky a nezaměstnanost&quot;
-  )</code></pre>
-<p><img src="grafy_files/figure-html/unnamed-chunk-5-1.png" width="1152" /></p>
+dg1 &lt;- as.xts(ts(start = c(1995), end=c(2018),
+  data =  dg1))
+dygraph(dg1)  %&gt;% 
+dyRangeSelector(dateWindow = c(&quot;1995-01-01&quot;, &quot;2018-01-01&quot;)) %&gt;% 
+dyLegend(width=500, show=&quot;auto&quot;)</code></pre>
+<div id="htmlwidget-492d73245516bf7489c2" style="width:768px;height:480px;" class="dygraphs html-widget"></div>
+<script type="application/json" data-for="htmlwidget-492d73245516bf7489c2">{"x":{"attrs":{"labels":["year","Podnikatel","OSVC"],"retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60}},"showRangeSelector":true,"dateWindow":["1995-01-01T00:00:00.000Z","2018-01-01T00:00:00.000Z"],"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":" #A7B1C4","rangeSelectorPlotStrokeColor":"#808FAB","interactionModel":"Dygraph.Interaction.defaultModel","legend":"auto","labelsDivWidth":500,"labelsShowZeroValues":true,"labelsSeparateLines":false,"hideOverlayOnMouseOut":true},"scale":"yearly","annotations":[],"shadings":[],"events":[],"format":"date","data":[["1995-01-01T00:00:00.000Z","1996-01-01T00:00:00.000Z","1997-01-01T00:00:00.000Z","1998-01-01T00:00:00.000Z","1999-01-01T00:00:00.000Z","2000-01-01T00:00:00.000Z","2001-01-01T00:00:00.000Z","2002-01-01T00:00:00.000Z","2003-01-01T00:00:00.000Z","2004-01-01T00:00:00.000Z","2005-01-01T00:00:00.000Z","2006-01-01T00:00:00.000Z","2007-01-01T00:00:00.000Z","2008-01-01T00:00:00.000Z","2009-01-01T00:00:00.000Z","2010-01-01T00:00:00.000Z","2011-01-01T00:00:00.000Z","2012-01-01T00:00:00.000Z","2013-01-01T00:00:00.000Z","2014-01-01T00:00:00.000Z","2015-01-01T00:00:00.000Z","2016-01-01T00:00:00.000Z","2017-01-01T00:00:00.000Z","2018-01-01T00:00:00.000Z"],[3.54,3.85,3.84,3.87,3.7,3.71,3.56,3.62,3.74,3.62,3.38,3.71,3.53,3.41,3.48,3.38,3.37,3.21,3.2,3.27,3.36,3.13,3.11,3.15],[7.1,7.16,7.34,8.3,8.79,9.21,9.37,10.2,11.04,10.88,10.38,10.35,10.91,11.16,11.32,12.17,12.59,12.95,12.38,12.76,12.54,12.84,12.88,12.8]]},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
+<pre class="r"><code>#dyAxis(&quot;x&quot;, ticker=&quot;function(a, b, pixels, opts, dygraph, vals) {
+# return Dygraph.getDateAxis(a, b, Dygraph.DECADAL, opts, dygraph)
+#                             }&quot;) ##další možnosti nastavovení zde zbytečné </code></pre>
 </div>
 
 
@@ -376,11 +357,6 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
-<script>
-$(document).ready(function () {
-  window.initializeCodeFolding("hide" === "show");
-});
-</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
